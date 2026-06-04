@@ -1,0 +1,29 @@
+
+<router-outlet />
+
+@if (showInstall()) {
+  <div class="pwa-toast install">
+    <div class="pwa-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </div>
+    <div class="pwa-text">
+      <strong>Install Social Chat</strong>
+      <span>Add to your home screen for the full app experience.</span>
+    </div>
+    <button class="pwa-secondary" type="button" (click)="dismissInstall()">Not now</button>
+    <button class="pwa-primary" type="button" (click)="install()">Install</button>
+  </div>
+}
+
+@if (showUpdate()) {
+  <div class="pwa-toast update">
+    <div class="pwa-icon">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </div>
+    <div class="pwa-text">
+      <strong>Update available</strong>
+      <span>A new version is ready.</span>
+    </div>
+    <button class="pwa-primary" type="button" (click)="applyUpdate()">Reload</button>
+  </div>
+}
