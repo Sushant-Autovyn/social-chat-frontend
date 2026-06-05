@@ -4,6 +4,20 @@ import { Injectable, signal } from '@angular/core';
 export class NotificationService {
   readonly permission = signal<NotificationPermission>(this.read());
   private audioCtx: AudioContext | null = null;
+  private audioUnlocked = false;
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      const unlock = () => {
+        this.ensureAudioContext();
+        this.audioCtx?.resume?.().catch(() => undefined);
+        this.audioUnlocked = true;
+      };
+      window.addEventListener('pointerdown', unlock, { once: true });
+      window.addEventListener('keydown', unlock, { once: true });
+      window.addEventListener('touchstart', unlock, { once: true });
+    }
+  }
 
   /**
    * Ask the browser for permission to show notifications. Safe to call
@@ -63,12 +77,12 @@ export class NotificationService {
 
   private beep(): void {
     try {
-      type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
-      const Ctx =
-        window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
-      if (!Ctx) return;
-      this.audioCtx ??= new Ctx();
+      this.ensureAudioContext();
       const ctx = this.audioCtx;
+      if (!ctx) return;
+      if (ctx.state === 'suspended') {
+        ctx.resume?.().catch(() => undefined);
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
@@ -86,6 +100,18 @@ export class NotificationService {
       osc.connect(gain).connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.35);
+    } catch {
+      // ignore
+    }
+  }
+
+  private ensureAudioContext(): void {
+    if (this.audioCtx) return;
+    try {
+      type WebkitWindow = Window & { webkitAudioContext?: typeof AudioContext };
+      const Ctx =
+        window.AudioContext ?? (window as WebkitWindow).webkitAudioContext;
+      if (Ctx) this.audioCtx = new Ctx();
     } catch {
       // ignore
     }
