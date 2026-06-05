@@ -9,6 +9,7 @@ import { GroupMessage, GroupSummary, GroupsService } from './groups.service';
 import { CallService } from './call.service';
 import { CallOverlay } from './call-overlay';
 import { Settings } from '../settings/settings';
+import { NotificationService } from '../../core/notification.service';
 
 type ActiveKind = 'dm' | 'group';
 type Tab = 'chats' | 'groups' | 'people';
@@ -26,6 +27,7 @@ export class Chat implements OnInit, OnDestroy {
   private chatSvc = inject(ChatService);
   private groupsSvc = inject(GroupsService);
   private callSvc = inject(CallService);
+  private notify = inject(NotificationService);
 
   // Auth + presence
   me = computed(() => this.authSvc.user());
@@ -99,14 +101,39 @@ export class Chat implements OnInit, OnDestroy {
     if (token) this.chatSvc.connect(token);
     this.callSvc.ensureSocket();
 
+    void this.notify.requestPermission();
+
     this.loadUsers();
     this.loadChats();
     this.loadGroups();
 
     this.subs.push(
       this.chatSvc.incomingMessage$.subscribe((msg) => {
-        if (this.activeKind() === 'dm' && this.activeChat()?.id === msg.chatId) {
+        const isActive =
+          this.activeKind() === 'dm' && this.activeChat()?.id === msg.chatId;
+        if (isActive) {
           this.messages.update((arr) => [...arr, msg]);
+        }
+
+        const myId = this.me()?.id;
+        if (msg.senderId !== myId) {
+          const tabFocused =
+            document.visibilityState === 'visible' && document.hasFocus();
+          if (!isActive || !tabFocused) {
+            const senderName =
+              msg.sender?.fullName ??
+              this.users().find((u) => u.id === msg.senderId)?.fullName ??
+              'New message';
+            this.notify.notifyMessage({
+              title: senderName,
+              body: msg.content,
+              icon: msg.sender?.avatar ?? null,
+              onClick: () => {
+                const chat = this.chats().find((c) => c.id === msg.chatId);
+                if (chat) this.selectChat(chat);
+              },
+            });
+          }
         }
       }),
     );
