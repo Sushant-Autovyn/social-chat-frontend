@@ -32,6 +32,8 @@ export class Settings {
   avatarUrl = signal(this.user()?.avatar ?? '');
   uploading = signal(false);
   saving = signal(false);
+  deleting = signal(false);
+  confirmDelete = signal(false);
   error = signal<string | null>(null);
   uploadInputId = `avatar-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -83,5 +85,31 @@ export class Settings {
 
   initial() {
     return (this.fullName() || this.user()?.fullName || '?').charAt(0);
+  }
+
+  askDelete() {
+    this.error.set(null);
+    this.confirmDelete.set(true);
+  }
+
+  cancelDelete() {
+    this.confirmDelete.set(false);
+  }
+
+  deleteAccount() {
+    this.deleting.set(true);
+    this.error.set(null);
+    this.usersSvc.deleteMe().subscribe({
+      next: () => {
+        this.deleting.set(false);
+        this.confirmDelete.set(false);
+        this.close.emit();
+        this.auth.logout();
+      },
+      error: (err) => {
+        this.deleting.set(false);
+        this.error.set(err?.error?.message ?? 'Could not delete account');
+      },
+    });
   }
 }

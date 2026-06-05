@@ -76,6 +76,26 @@
 
   @if (error()) { <p class="err">{{ error() }}</p> }
 
+  <section class="danger-zone">
+    <h3>Danger zone</h3>
+    @if (!confirmDelete()) {
+      <div class="row-toggle">
+        <div>
+          <p class="muted" style="margin: 0;">Permanently delete your account, messages, and groups you own.</p>
+        </div>
+        <button type="button" class="danger" (click)="askDelete()">Delete account</button>
+      </div>
+    } @else {
+      <p class="muted" style="margin: 0;">This cannot be undone. All your chats, messages and owned groups will be deleted.</p>
+      <div class="danger-actions">
+        <button type="button" class="ghost" (click)="cancelDelete()" [disabled]="deleting()">Cancel</button>
+        <button type="button" class="danger" (click)="deleteAccount()" [disabled]="deleting()">
+          {{ deleting() ? 'Deleting…' : 'Yes, delete my account' }}
+        </button>
+      </div>
+    }
+  </section>
+
   <footer>
     <button class="ghost" type="button" (click)="close.emit()">Close</button>
     <button class="primary" type="button" (click)="save()" [disabled]="saving()">

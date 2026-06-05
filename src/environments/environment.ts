@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBase: 'http://localhost:3000',
+  apiBase: 'https://social-chat-backend-production.up.railway.app',
 };

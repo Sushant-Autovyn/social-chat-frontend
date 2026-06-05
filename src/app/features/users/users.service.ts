@@ -26,4 +26,8 @@ export class UsersService {
   updateMe(patch: { fullName?: string; avatar?: string | null }): Observable<UserSummary> {
     return this.http.patch<UserSummary>(`${this.base}/me`, patch);
   }
+
+  deleteMe(): Observable<void> {
+    return this.http.delete<void>(`${this.base}/me`);
+  }
 }
