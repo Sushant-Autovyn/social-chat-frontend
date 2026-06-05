@@ -13,6 +13,11 @@ export const routes: Routes = [
     canActivate: [guestGuard],
   },
   {
+    path: 'auth/callback',
+    loadComponent: () =>
+      import('./features/auth/oauth-callback/oauth-callback').then((m) => m.OAuthCallback),
+  },
+  {
     path: 'chat',
     loadComponent: () => import('./features/chat/chat').then((m) => m.Chat),
     canActivate: [authGuard],

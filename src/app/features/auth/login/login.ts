@@ -29,6 +29,10 @@ export class Login {
     this.showPassword.update((v) => !v);
   }
 
+  signInWith(provider: 'google' | 'facebook') {
+    this.auth.startOAuth(provider);
+  }
+
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

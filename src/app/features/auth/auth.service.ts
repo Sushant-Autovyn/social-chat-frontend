@@ -58,6 +58,20 @@ export class AuthService {
     this._user.set(user);
   }
 
+  applySession(token: string, user: AuthUser): void {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this._user.set(user);
+  }
+
+  fetchMe(): Observable<AuthUser> {
+    return this.http.get<AuthUser>(`${this.base}/me`);
+  }
+
+  startOAuth(provider: 'google' | 'facebook'): void {
+    window.location.href = `${this.base}/${provider}`;
+  }
+
   private persist(res: AuthResponse): void {
     localStorage.setItem(TOKEN_KEY, res.accessToken);
     localStorage.setItem(USER_KEY, JSON.stringify(res.user));
